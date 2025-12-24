@@ -49,17 +49,27 @@
     <button onclick="mockAction()">Получить тестовые кредиты</button>
   </div>
 
-  <script>
-    const tg = window.Telegram.WebApp;
-    tg.ready();
+<script>
+  const tg = window.Telegram.WebApp;
+  tg.ready();
 
-    let credits = 0;
+  const userId = tg.initDataUnsafe.user.id;
+  const API = "https://mktxrmadgbiwyfgvacxi.supabase.co/functions/v1";
 
-    function mockAction() {
-      credits += 10;
-      document.getElementById("credits").innerText = credits;
-    }
-  </script>
+  async function login() {
+    const res = await fetch(API + "/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId })
+    });
+
+    const data = await res.json();
+    document.getElementById("credits").innerText = data.credits;
+  }
+
+  login();
+</script>
 
 </body>
+
 </html>
