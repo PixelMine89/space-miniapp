@@ -22,6 +22,14 @@
 </div>
 
 <div class="card">
+  <p><b>Купить ⭐</b></p>
+  <button onclick="buyStars(10)">10 ⭐</button>
+  <button onclick="buyStars(25)">25 ⭐</button>
+  <button onclick="buyStars(50)">50 ⭐</button>
+  <button onclick="buyStars(100)">100 ⭐</button>
+</div>
+
+<div class="card">
   <p><b>Купить ракету за ⭐:</b></p>
   <button onclick="buyRocket('Scout')">Scout (10⭐)</button>
   <button onclick="buyRocket('Cargo')">Cargo (25⭐)</button>
@@ -40,7 +48,7 @@
   tg.ready();
 
   // Заменить на свой URL Google Apps Script
-  const API_URL = "https://script.google.com/macros/s/AKfycbzJtNuLhr8hvdyj1HvC4g8Qs1P_mQHN68ZWFARh6h7DEajdxvxDNGHDLJ0ArXytlzfiiA/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbx15P57litpasgzQAGqSAy46c84V_EmKVOhGcMPHfRBbzx-qGh2nGxt9jBeZ5Xm08uU/exec"; 
   const userId = tg.initDataUnsafe.user.id;
 
   // ======== Регистрация пользователя ========
@@ -65,6 +73,40 @@
       if(data.credits !== undefined) document.getElementById("credits").innerText = data.credits;
       if(data.stars !== undefined) document.getElementById("stars").innerText = data.stars;
     });
+  }
+
+  function buyStars(amount) {
+  Telegram.WebApp.openInvoice({
+    title: "Покупка звезд",
+    description: amount + " ⭐ для Space Fleet",
+    payload: "stars_" + amount,
+    currency: "XTR",
+    prices: [{ label: amount + " ⭐", amount: amount }]
+  });
+  }
+
+  Telegram.WebApp.onEvent("invoiceClosed", function (event) {
+  if (event.status === "paid") {
+    const payload = event.payload; // stars_50
+    const amount = parseInt(payload.split("_")[1]);
+    addStarsToUser(amount);
+  }
+  });
+
+  function addStarsToUser(amount) {
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "addStars",
+      user_id: userId,
+      amount: amount
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+    alert("Звёзды начислены: " + amount);
+    getUserData();
+  });
   }
 
   // ======== Покупка ракеты ========
@@ -130,3 +172,4 @@
 
 </body>
 </html>
+
