@@ -22,48 +22,103 @@
 
 <div class="card">
   <p><b>Credits:</b> <span id="credits">0</span></p>
-  <button onclick="mockAction()">Получить тестовые кредиты</button>
 </div>
 
-<script>
+<div class="card">
+  <button onclick="addCredits(10)">Получить тестовые 10 кредитов</button>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.js';
+
+// ---------------------------
+// ⚡ Настройки Supabase
+// ---------------------------
+const SUPABASE_URL = "ВАШ_SUPABASE_URL"; // из Secrets
+const SUPABASE_ANON_KEY = "ВАШ_ANON_KEY"; // из Secrets (публичный ключ)
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ---------------------------
+// ⚡ Telegram Mini App
+// ---------------------------
 const tg = window.Telegram.WebApp;
 tg.ready();
 
-let initialized = false;
-
-async function login() {
-  if (initialized) return;
-  initialized = true;
-
+// ---------------------------
+// ⚡ Инициализация пользователя
+// ---------------------------
+let userId;
+async function initUser() {
   const user = tg.initDataUnsafe?.user;
   if (!user || !user.id) {
-    console.log("No Telegram user yet");
+    console.log("Нет пользователя Telegram");
     return;
   }
+  userId = user.id;
 
-  // ✅ Здесь нужно вставить точный Endpoint URL функции login
-  // Например: "https://mktxrmadgbiwyfgvacxi.functions.supabase.co/login"
-  const API = "https://mktxrmadgbiwyfgvacxi.supabase.co/functions/v1/login";
+  // Проверяем, есть ли пользователь в таблице
+  const { data: existingUser, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", userId)
+    .maybeSingle();
 
-  const res = await fetch(API, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ user_id: user.id })
-  });
+  if (error) console.log("Ошибка select:", error);
 
-  let data;
-  try { data = await res.json(); } catch { console.log("Invalid JSON"); return; }
+  if (!existingUser) {
+    // Если пользователя нет — создаём
+    const { error: insertError } = await supabase
+      .from("users")
+      .insert({ id: userId, credits: 0 });
 
-  console.log("API response:", data);
+    if (insertError) console.log("Ошибка insert:", insertError);
 
-  if (typeof data.credits === "number") {
-    document.getElementById("credits").innerText = data.credits;
+    updateCreditsUI(0);
   } else {
-    console.log("Invalid credits data:", data);
+    updateCreditsUI(existingUser.credits);
   }
 }
 
-login();
+// ---------------------------
+// ⚡ Обновление UI
+// ---------------------------
+function updateCreditsUI(value) {
+  document.getElementById("credits").innerText = value;
+}
+
+// ---------------------------
+// ⚡ Добавление кредитов (для теста)
+// ---------------------------
+async function addCredits(amount) {
+  if (!userId) return;
+
+  // Получаем текущие кредиты
+  const { data: userData, error: selectError } = await supabase
+    .from("users")
+    .select("credits")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (selectError) { console.log("Select error:", selectError); return; }
+
+  const newCredits = (userData?.credits || 0) + amount;
+
+  // Обновляем таблицу
+  const { error: updateError } = await supabase
+    .from("users")
+    .update({ credits: newCredits })
+    .eq("id", userId);
+
+  if (updateError) { console.log("Update error:", updateError); return; }
+
+  updateCreditsUI(newCredits);
+}
+
+// ---------------------------
+// ⚡ Запуск
+// ---------------------------
+initUser();
+
 </script>
 
 </body>
