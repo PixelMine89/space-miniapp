@@ -5,121 +5,61 @@
   <title>Space Fleet</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    body { margin:0; font-family: Arial; background: #0b1020; color: #fff; text-align:center; }
-    h1 { margin-top: 20px; }
-    .card { background:#151b35; margin:15px; padding:15px; border-radius:12px; }
-    button { background:#4da3ff; border:none; padding:12px 20px; border-radius:10px; font-size:16px; cursor:pointer; margin-top:10px; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b1020;
+      color: #fff;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    .card {
+      background: #151b35;
+      margin: 15px;
+      padding: 15px;
+      border-radius: 12px;
+    }
+
+    button {
+      background: #4da3ff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
 
-<h1>🚀 Space Fleet</h1>
+  <h1>🚀 Space Fleet</h1>
 
-<div class="card">
-  <p>Добро пожаловать в космический симулятор.</p>
-  <p>Управляй ракетами и экономикой.</p>
-</div>
+  <div class="card">
+    <p>Добро пожаловать в космический симулятор.</p>
+    <p>Управляй ракетами и экономикой.</p>
+  </div>
 
-<div class="card">
-  <p><b>Credits:</b> <span id="credits">0</span></p>
-</div>
+  <div class="card">
+    <p><b>Credits:</b> <span id="credits">0</span></p>
+    <button onclick="mockAction()">Получить тестовые кредиты</button>
+  </div>
 
-<div class="card">
-  <button onclick="addCredits(10)">Получить тестовые 10 кредитов</button>
-</div>
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
 
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.js';
+    let credits = 0;
 
-// ---------------------------
-// ⚡ Настройки Supabase
-// ---------------------------
-const SUPABASE_URL = "ВАШ_SUPABASE_URL"; // из Secrets
-const SUPABASE_ANON_KEY = "ВАШ_ANON_KEY"; // из Secrets (публичный ключ)
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// ---------------------------
-// ⚡ Telegram Mini App
-// ---------------------------
-const tg = window.Telegram.WebApp;
-tg.ready();
-
-// ---------------------------
-// ⚡ Инициализация пользователя
-// ---------------------------
-let userId;
-async function initUser() {
-  const user = tg.initDataUnsafe?.user;
-  if (!user || !user.id) {
-    console.log("Нет пользователя Telegram");
-    return;
-  }
-  userId = user.id;
-
-  // Проверяем, есть ли пользователь в таблице
-  const { data: existingUser, error } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", userId)
-    .maybeSingle();
-
-  if (error) console.log("Ошибка select:", error);
-
-  if (!existingUser) {
-    // Если пользователя нет — создаём
-    const { error: insertError } = await supabase
-      .from("users")
-      .insert({ id: userId, credits: 0 });
-
-    if (insertError) console.log("Ошибка insert:", insertError);
-
-    updateCreditsUI(0);
-  } else {
-    updateCreditsUI(existingUser.credits);
-  }
-}
-
-// ---------------------------
-// ⚡ Обновление UI
-// ---------------------------
-function updateCreditsUI(value) {
-  document.getElementById("credits").innerText = value;
-}
-
-// ---------------------------
-// ⚡ Добавление кредитов (для теста)
-// ---------------------------
-async function addCredits(amount) {
-  if (!userId) return;
-
-  // Получаем текущие кредиты
-  const { data: userData, error: selectError } = await supabase
-    .from("users")
-    .select("credits")
-    .eq("id", userId)
-    .maybeSingle();
-
-  if (selectError) { console.log("Select error:", selectError); return; }
-
-  const newCredits = (userData?.credits || 0) + amount;
-
-  // Обновляем таблицу
-  const { error: updateError } = await supabase
-    .from("users")
-    .update({ credits: newCredits })
-    .eq("id", userId);
-
-  if (updateError) { console.log("Update error:", updateError); return; }
-
-  updateCreditsUI(newCredits);
-}
-
-// ---------------------------
-// ⚡ Запуск
-// ---------------------------
-initUser();
-
-</script>
+    function mockAction() {
+      credits += 10;
+      document.getElementById("credits").innerText = credits;
+    }
+  </script>
 
 </body>
 </html>
