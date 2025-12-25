@@ -5,16 +5,10 @@
   <title>Space Fleet</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0b1020;
-      color: #fff;
-      text-align: center;
-    }
+    body { margin:0; font-family: Arial; background: #0b1020; color: #fff; text-align:center; }
     h1 { margin-top: 20px; }
-    .card { background: #151b35; margin: 15px; padding: 15px; border-radius: 12px; }
-    button { background: #4da3ff; border: none; padding: 12px 20px; border-radius: 10px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+    .card { background:#151b35; margin:15px; padding:15px; border-radius:12px; }
+    button { background:#4da3ff; border:none; padding:12px 20px; border-radius:10px; font-size:16px; cursor:pointer; margin-top:10px; }
   </style>
 </head>
 <body>
@@ -32,46 +26,41 @@
 </div>
 
 <script>
-  const tg = window.Telegram.WebApp;
-  tg.ready();
+const tg = window.Telegram.WebApp;
+tg.ready();
 
-  let initialized = false;
+let initialized = false;
 
-  async function login() {
-    if (initialized) return; // защита от повторного вызова
-    initialized = true;
+async function login() {
+  if (initialized) return;
+  initialized = true;
 
-    const user = tg.initDataUnsafe?.user;
-    if (!user || !user.id) {
-      console.log("No Telegram user yet");
-      return;
-    }
-
-    const API = "https://mktxrmadgbiwyfgvacxi.supabase.co/functions/v1"; // <- поменять на свой URL
-    const res = await fetch(API + "/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_id: user.id })
-    });
-
-    let data;
-    try {
-      data = await res.json();
-    } catch {
-      console.log("Invalid JSON response");
-      return;
-    }
-
-    console.log("API response:", data);
-
-    if (typeof data.credits === "number") {
-      document.getElementById("credits").innerText = data.credits;
-    } else {
-      console.log("Invalid credits data:", data);
-    }
+  const user = tg.initDataUnsafe?.user;
+  if (!user || !user.id) {
+    console.log("No Telegram user yet");
+    return;
   }
 
-  login();
+  const API = "https://mktxrmadgbiwyfgvacxi.supabase.co/functions/v1"; // <- поменять на свой URL
+  const res = await fetch(API + "/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user_id: user.id })
+  });
+
+  let data;
+  try { data = await res.json(); } catch { console.log("Invalid JSON"); return; }
+
+  console.log("API response:", data);
+
+  if (typeof data.credits === "number") {
+    document.getElementById("credits").innerText = data.credits;
+  } else {
+    console.log("Invalid credits data:", data);
+  }
+}
+
+login();
 </script>
 
 </body>
