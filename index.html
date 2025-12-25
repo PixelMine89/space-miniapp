@@ -12,42 +12,24 @@
       color: #fff;
       text-align: center;
     }
-
-    h1 {
-      margin-top: 20px;
-    }
-
-    .card {
-      background: #151b35;
-      margin: 15px;
-      padding: 15px;
-      border-radius: 12px;
-    }
-
-    button {
-      background: #4da3ff;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 10px;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
+    h1 { margin-top: 20px; }
+    .card { background: #151b35; margin: 15px; padding: 15px; border-radius: 12px; }
+    button { background: #4da3ff; border: none; padding: 12px 20px; border-radius: 10px; font-size: 16px; cursor: pointer; margin-top: 10px; }
   </style>
 </head>
 <body>
 
-  <h1>🚀 Space Fleet</h1>
+<h1>🚀 Space Fleet</h1>
 
-  <div class="card">
-    <p>Добро пожаловать в космический симулятор.</p>
-    <p>Управляй ракетами и экономикой.</p>
-  </div>
+<div class="card">
+  <p>Добро пожаловать в космический симулятор.</p>
+  <p>Управляй ракетами и экономикой.</p>
+</div>
 
-  <div class="card">
-    <p><b>Credits:</b> <span id="credits">0</span></p>
-    <button onclick="mockAction()">Получить тестовые кредиты</button>
-  </div>
+<div class="card">
+  <p><b>Credits:</b> <span id="credits">0</span></p>
+  <button onclick="mockAction()">Получить тестовые кредиты</button>
+</div>
 
 <script>
   const tg = window.Telegram.WebApp;
@@ -56,7 +38,7 @@
   let initialized = false;
 
   async function login() {
-    if (initialized) return;
+    if (initialized) return; // защита от повторного вызова
     initialized = true;
 
     const user = tg.initDataUnsafe?.user;
@@ -65,20 +47,27 @@
       return;
     }
 
-    const res = await fetch(
-      "https://mktxrmadgbiwyfgvacxi.supabase.co/functions/v1/login",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: user.id })
-      }
-    );
+    const API = "https://mktxrmadgbiwyfgvacxi.supabase.co/functions/v1"; // <- поменять на свой URL
+    const res = await fetch(API + "/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: user.id })
+    });
 
-    const data = await res.json();
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      console.log("Invalid JSON response");
+      return;
+    }
+
     console.log("API response:", data);
 
     if (typeof data.credits === "number") {
       document.getElementById("credits").innerText = data.credits;
+    } else {
+      console.log("Invalid credits data:", data);
     }
   }
 
@@ -86,7 +75,4 @@
 </script>
 
 </body>
-
 </html>
-
-
