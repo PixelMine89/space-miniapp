@@ -5,171 +5,90 @@
   <title>Space Fleet</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    body { margin:0; font-family: Arial,sans-serif; background:#0b1020; color:#fff; text-align:center; }
-    h1 { margin-top:20px; }
-    .card { background:#151b35; margin:15px; padding:15px; border-radius:12px; }
-    button { background:#4da3ff; border:none; padding:12px 20px; border-radius:10px; font-size:16px; cursor:pointer; margin-top:10px; }
-    #rocketsList { text-align:left; max-width:400px; margin:auto; }
+    body { background:#0b1020; color:white; font-family:Arial; text-align:center }
+    .card { background:#151b35; margin:15px; padding:15px; border-radius:12px }
+    button { padding:10px 20px; margin:5px; font-size:16px }
   </style>
 </head>
 <body>
 
-<h1>🚀 Space Fleet</h1>
+<h2>🚀 Space Fleet</h2>
 
 <div class="card">
-  <p><b>Credits:</b> <span id="credits">0</span></p>
-  <p><b>Stars:</b> <span id="stars">0</span></p>
+  ⭐ Stars: <span id="stars">0</span><br>
+  💰 Credits: <span id="credits">0</span>
 </div>
 
 <div class="card">
-  <p><b>Купить ⭐</b></p>
+  <b>Купить ⭐</b><br>
   <button onclick="buyStars(10)">10 ⭐</button>
   <button onclick="buyStars(25)">25 ⭐</button>
   <button onclick="buyStars(50)">50 ⭐</button>
-  <button onclick="buyStars(100)">100 ⭐</button>
 </div>
 
 <div class="card">
-  <p><b>Купить ракету за ⭐:</b></p>
+  <b>Ракеты</b><br>
   <button onclick="buyRocket('Scout')">Scout (10⭐)</button>
   <button onclick="buyRocket('Cargo')">Cargo (25⭐)</button>
-  <button onclick="buyRocket('Fighter')">Fighter (50⭐)</button>
-  <button onclick="buyRocket('Explorer')">Explorer (100⭐)</button>
-</div>
-
-<div class="card">
-  <p><b>Ракеты:</b></p>
-  <div id="rocketsList">Список ракет загрузится после покупки</div>
-  <button onclick="collectCredits()">Собрать credits</button>
 </div>
 
 <script>
-  const tg = window.Telegram.WebApp;
-  tg.ready();
+const tg = Telegram.WebApp;
+tg.ready();
 
-  // Заменить на свой URL Google Apps Script
-  const API_URL = "https://script.google.com/macros/s/AKfycbx15P57litpasgzQAGqSAy46c84V_EmKVOhGcMPHfRBbzx-qGh2nGxt9jBeZ5Xm08uU/exec"; 
-  const userId = tg.initDataUnsafe.user.id;
+const API_URL = "https://script.google.com/macros/s/AKfycbzkrq92foo79pcOF04ijFsj6o5VUcjlnTcpbgbWgDB1WyZ2hgg6q7nyOqrxOWqhrJ-Y9A/exec";
+const userId = tg.initDataUnsafe.user.id;
 
-  // ======== Регистрация пользователя ========
+// register
+fetch(API_URL, {
+  method: "POST",
+  body: JSON.stringify({ action: "register", user_id: userId })
+}).then(loadUser);
+
+function loadUser() {
   fetch(API_URL, {
     method: "POST",
-    body: JSON.stringify({action: "registerUser", user_id: userId})
-  }).then(r => r.json()).then(data => {
-    console.log("Регистрация:", data);
-    getUserData();
-    getRockets();
-  });
-
-  // ======== Получение данных пользователя ========
-  function getUserData() {
-    fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({action: "getUser", user_id: userId})
-    })
-    .then(r => r.json())
-    .then(data => {
-      console.log("User data:", data);
-      if(data.credits !== undefined) document.getElementById("credits").innerText = data.credits;
-      if(data.stars !== undefined) document.getElementById("stars").innerText = data.stars;
-    });
-  }
-
-  function buyStars(amount) {
-  Telegram.WebApp.openInvoice({
-    title: "Покупка звезд",
-    description: amount + " ⭐ для Space Fleet",
-    payload: "stars_" + amount,
-    currency: "XTR",
-    prices: [{ label: amount + " ⭐", amount: amount }]
-  });
-  }
-
-  Telegram.WebApp.onEvent("invoiceClosed", function (event) {
-  if (event.status === "paid") {
-    const payload = event.payload; // stars_50
-    const amount = parseInt(payload.split("_")[1]);
-    addStarsToUser(amount);
-  }
-  });
-
-  function addStarsToUser(amount) {
-  fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "addStars",
-      user_id: userId,
-      amount: amount
-    })
+    body: JSON.stringify({ action: "getUser", user_id: userId })
   })
   .then(r => r.json())
-  .then(data => {
-    alert("Звёзды начислены: " + amount);
-    getUserData();
+  .then(u => {
+    document.getElementById("stars").innerText = u.stars || 0;
+    document.getElementById("credits").innerText = u.credits || 0;
   });
-  }
+}
 
-  // ======== Покупка ракеты ========
-  function buyRocket(type) {
+function buyRocket(type) {
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ action: "buyRocket", user_id: userId, type })
+  })
+  .then(r => r.json())
+  .then(res => {
+    alert(JSON.stringify(res));
+    loadUser();
+  });
+}
+
+function buyStars(amount) {
+  tg.openInvoice({
+    title: "Покупка звезд",
+    description: amount + " ⭐",
+    payload: "stars_" + amount,
+    currency: "XTR",
+    prices: [{ label: amount + " ⭐", amount }]
+  });
+}
+
+tg.onEvent("invoiceClosed", e => {
+  if (e.status === "paid") {
+    const amount = Number(e.payload.split("_")[1]);
     fetch(API_URL, {
       method: "POST",
-      body: JSON.stringify({action: "buyRocket", user_id: userId, rocket_type: type})
-    })
-    .then(r => r.json())
-    .then(data => {
-      if(data.status === "ok"){
-        alert("Ракета куплена!");
-        getUserData();
-        getRockets();
-      } else {
-        alert("Ошибка: " + (data.error || "неизвестно"));
-      }
-    });
+      body: JSON.stringify({ action: "addStars", user_id: userId, amount })
+    }).then(loadUser);
   }
-
-  // ======== Получение списка ракет ========
-  function getRockets() {
-    fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({action: "getRockets", user_id: userId})
-    })
-    .then(r => r.json())
-    .then(data => {
-      const listDiv = document.getElementById("rocketsList");
-      if(data.length === 0){
-        listDiv.innerHTML = "Ракет нет";
-        return;
-      }
-      let html = "<ul>";
-      data.forEach(r => {
-        const bought = new Date(r.bought_at);
-        html += <li>${r.rocket_type} | Fuel: ${r.fuel} | Health: ${r.health} | Bought: ${bought.toLocaleString()} | Duration: ${r.duration}h | Reward: ${r.reward}</li>;
-      });
-      html += "</ul>";
-      listDiv.innerHTML = html;
-    });
-  }
-
-  // ======== Собрать credits ========
-  function collectCredits() {
-    fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({action: "collectCredits", user_id: userId})
-    })
-    .then(r => r.json())
-    .then(data => {
-      if(data.status === "ok"){
-        alert("Credits начислены: " + data.credits);
-        getUserData();
-        getRockets();
-      } else {
-        alert("Ошибка: " + (data.error || "неизвестно"));
-      }
-    });
-  }
-
+});
 </script>
 
 </body>
 </html>
-
