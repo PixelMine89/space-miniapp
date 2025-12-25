@@ -37,29 +37,89 @@
 </head>
 <body>
 
-  <h1>🚀 Space Fleet</h1>
+<h1>🚀 Space Fleet</h1>
 
-  <div class="card">
-    <p>Добро пожаловать в космический симулятор.</p>
-    <p>Управляй ракетами и экономикой.</p>
-  </div>
+<div class="card">
+  <p>Добро пожаловать в космический симулятор.</p>
+  <p>Управляй ракетами и экономикой.</p>
+</div>
 
-  <div class="card">
-    <p><b>Credits:</b> <span id="credits">0</span></p>
-    <button onclick="mockAction()">Получить тестовые кредиты</button>
-  </div>
+<div class="card">
+  <p><b>Credits:</b> <span id="credits">0</span></p>
+  <button onclick="addTestCredits()">Получить тестовые кредиты</button>
+</div>
 
-  <script>
-    const tg = window.Telegram.WebApp;
-    tg.ready();
+<div class="card">
+  <p><b>Ракеты:</b></p>
+  <button onclick="addTestRocket('Scout')">Добавить ракету Scout</button>
+  <button onclick="addTestRocket('Cargo')">Добавить ракету Cargo</button>
+</div>
 
-    let credits = 0;
+<script>
+  const tg = window.Telegram.WebApp;
+  tg.ready();
 
-    function mockAction() {
-      credits += 10;
-      document.getElementById("credits").innerText = credits;
-    }
-  </script>
+  // URL твоего Google Apps Script
+  const API_URL = "https://script.google.com/macros/s/XXXXX/exec"; // <- замени на свой URL
+
+  // ID пользователя Telegram
+  const userId = tg.initDataUnsafe.user.id;
+
+  // Регистрация пользователя
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({action: "registerUser", user_id: userId})
+  })
+  .then(r => r.json())
+  .then(data => {
+    console.log("Регистрация:", data);
+    getUserData(); // сразу получаем данные после регистрации
+  });
+
+  // Получение данных пользователя
+  function getUserData() {
+    fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({action: "getUser", user_id: userId})
+    })
+    .then(r => r.json())
+    .then(data => {
+      console.log("User data:", data);
+      if(data.credits !== undefined) {
+        document.getElementById("credits").innerText = data.credits;
+      }
+    });
+  }
+
+  // Добавление кредитов (тест)
+  function addTestCredits() {
+    fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({action: "addCredits", user_id: userId, amount: 10})
+    })
+    .then(r => r.json())
+    .then(data => {
+      console.log("Credits updated:", data);
+      if(data.credits !== undefined) {
+        document.getElementById("credits").innerText = data.credits;
+      }
+    });
+  }
+
+  // Добавление ракеты (тест)
+  function addTestRocket(type) {
+    fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({action: "addRocket", user_id: userId, rocket_type: type})
+    })
+    .then(r => r.json())
+    .then(data => {
+      console.log("Rocket added:", data);
+      alert("Ракета " + type + " добавлена!");
+    });
+  }
+
+</script>
 
 </body>
 </html>
