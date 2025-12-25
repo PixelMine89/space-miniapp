@@ -21,6 +21,7 @@
 
 <div class="card">
   <b>Купить ⭐</b><br>
+  <button onclick="buyStars(1)">1 ⭐</button>
   <button onclick="buyStars(10)">10 ⭐</button>
   <button onclick="buyStars(25)">25 ⭐</button>
   <button onclick="buyStars(50)">50 ⭐</button>
@@ -70,25 +71,13 @@ function buyRocket(type) {
 }
 
 function buyStars(amount) {
-  tg.openInvoice({
-    title: "Покупка звезд",
-    description: amount + " ⭐",
-    payload: "stars_" + amount,
-    currency: "XTR",
-    prices: [{ label: amount + " ⭐", amount }]
-  });
+  tg.sendData(JSON.stringify({
+    action: "buy_stars",
+    amount: amount
+  }));
 }
-
-tg.onEvent("invoiceClosed", e => {
-  if (e.status === "paid") {
-    const amount = Number(e.payload.split("_")[1]);
-    fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "addStars", user_id: userId, amount })
-    }).then(loadUser);
-  }
-});
 </script>
 
 </body>
 </html>
+
