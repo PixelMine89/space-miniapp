@@ -70,14 +70,29 @@ function buyRocket(type) {
   });
 }
 
-function buyStars(amount) {
-  tg.sendData(JSON.stringify({
-    action: "buy_stars",
-    amount: amount
-  }));
-}
+async function buyStars(amount) {
+      console.log("Clicked: ", amount); // для проверки
+      try {
+        const res = await fetch('https://твой_сервер_или_endpoint/buy-stars', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: amount, user_id: tg.initDataUnsafe.user.id })
+        });
+
+        const data = await res.json();
+        if(data.success) {
+          alert("Звёзды куплены!");
+        } else {
+          alert("Ошибка: " + data.message);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Ошибка подключения к серверу");
+      }
+    }
 </script>
 
 </body>
 </html>
+
 
