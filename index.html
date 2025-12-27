@@ -50,7 +50,6 @@ const tg = Telegram.WebApp;
 tg.ready();
 
 function buyRocket(type, price) {
-  alert("Кнопка нажата: " + type);
   tg.sendData(JSON.stringify({
     action: "buy_rocket",
     type: type,
@@ -61,4 +60,5 @@ function buyRocket(type, price) {
 
 </body>
 </html>
+
 
