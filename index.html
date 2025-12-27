@@ -39,26 +39,58 @@
 
 <div class="card">
   <b>Купить ракету (Telegram ⭐)</b><br>
-  <button onclick="buyRocket('Scout', 10)">Scout — 10⭐</button><br>
-  <button onclick="buyRocket('Cargo', 25)">Cargo — 25⭐</button><br>
-  <button onclick="buyRocket('Fighter', 50)">Fighter — 50⭐</button><br>
-  <button onclick="buyRocket('Explorer', 100)">Explorer — 100⭐</button>
+  <button onclick="buyRocket('Scout', 10)">Scout (10⭐)</button>
+  <button onclick="buyRocket('Cargo', 25)">Cargo (25⭐)</button>
 </div>
 
 <script>
 const tg = Telegram.WebApp;
 tg.ready();
 
+let pendingAction = null;
+
+// регистрация пользователя (оставляем)
+fetch(API_URL, {
+  method: "POST",
+  body: JSON.stringify({ action: "register", user_id: userId })
+}).then(loadUser);
+
+// ====== ПОКУПКА РАКЕТЫ ======
 function buyRocket(type, price) {
-  tg.sendData(JSON.stringify({
+  pendingAction = {
     action: "buy_rocket",
     type: type,
     price: price
-  }));
+  };
+
+  tg.MainButton.setText(Купить ${type} за ${price} ⭐);
+  tg.MainButton.show();
+}
+
+// ====== ОБРАБОТКА MAIN BUTTON ======
+tg.MainButton.onClick(() => {
+  if (!pendingAction) return;
+
+  tg.sendData(JSON.stringify(pendingAction));
+  tg.MainButton.hide();
+});
+
+// ====== ЗАГРУЗКА ПОЛЬЗОВАТЕЛЯ ======
+function loadUser() {
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ action: "getUser", user_id: userId })
+  })
+  .then(r => r.json())
+  .then(u => {
+    document.getElementById("stars").innerText = u.stars || 0;
+    document.getElementById("credits").innerText = u.credits || 0;
+  });
 }
 </script>
 
 </body>
 </html>
+
 
 
