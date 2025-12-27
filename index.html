@@ -5,9 +5,28 @@
   <title>Space Fleet</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    body { background:#0b1020; color:white; font-family:Arial; text-align:center }
-    .card { background:#151b35; margin:15px; padding:15px; border-radius:12px }
-    button { padding:10px 20px; margin:5px; font-size:16px }
+    body {
+      background:#0b1020;
+      color:white;
+      font-family:Arial;
+      text-align:center;
+      margin:0;
+      padding:20px;
+    }
+    .card {
+      background:#151b35;
+      margin:15px 0;
+      padding:15px;
+      border-radius:12px;
+    }
+    button {
+      padding:12px 20px;
+      margin:6px;
+      font-size:16px;
+      border-radius:8px;
+      border:none;
+      cursor:pointer;
+    }
   </style>
 </head>
 <body>
@@ -15,84 +34,29 @@
 <h2>🚀 Space Fleet</h2>
 
 <div class="card">
-  ⭐ Stars: <span id="stars">0</span><br>
   💰 Credits: <span id="credits">0</span>
 </div>
 
 <div class="card">
-  <b>Купить ⭐</b><br>
-  <button onclick="buyStars(1)">1 ⭐</button>
-  <button onclick="buyStars(10)">10 ⭐</button>
-  <button onclick="buyStars(25)">25 ⭐</button>
-  <button onclick="buyStars(50)">50 ⭐</button>
-</div>
-
-<div class="card">
-  <b>Ракеты</b><br>
-  <button onclick="buyRocket('Scout')">Scout (10⭐)</button>
-  <button onclick="buyRocket('Cargo')">Cargo (25⭐)</button>
+  <b>Купить ракету (Telegram ⭐)</b><br>
+  <button onclick="buyRocket('Scout', 10)">Scout — 10⭐</button><br>
+  <button onclick="buyRocket('Cargo', 25)">Cargo — 25⭐</button><br>
+  <button onclick="buyRocket('Fighter', 50)">Fighter — 50⭐</button><br>
+  <button onclick="buyRocket('Explorer', 100)">Explorer — 100⭐</button>
 </div>
 
 <script>
 const tg = Telegram.WebApp;
 tg.ready();
 
-const API_URL = "https://script.google.com/macros/s/AKfycbzkrq92foo79pcOF04ijFsj6o5VUcjlnTcpbgbWgDB1WyZ2hgg6q7nyOqrxOWqhrJ-Y9A/exec";
-const userId = tg.initDataUnsafe.user.id;
-
-// register
-fetch(API_URL, {
-  method: "POST",
-  body: JSON.stringify({ action: "register", user_id: userId })
-}).then(loadUser);
-
-function loadUser() {
-  fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({ action: "getUser", user_id: userId })
-  })
-  .then(r => r.json())
-  .then(u => {
-    document.getElementById("stars").innerText = u.stars || 0;
-    document.getElementById("credits").innerText = u.credits || 0;
-  });
+function buyRocket(type, price) {
+  tg.sendData(JSON.stringify({
+    action: "buy_rocket",
+    type: type,
+    price: price
+  }));
 }
-
-function buyRocket(type) {
-  fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({ action: "buyRocket", user_id: userId, type })
-  })
-  .then(r => r.json())
-  .then(res => {
-    alert(JSON.stringify(res));
-    loadUser();
-  });
-}
-
-async function buyStars(amount) {
-      console.log("Clicked: ", amount); // для проверки
-      try {
-        const res = await fetch('https://твой_сервер_или_endpoint/buy-stars', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: amount, user_id: tg.initDataUnsafe.user.id })
-        });
-
-        const data = await res.json();
-        if(data.success) {
-          alert("Звёзды куплены!");
-        } else {
-          alert("Ошибка: " + data.message);
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Ошибка подключения к серверу");
-      }
-    }
 </script>
 
 </body>
 </html>
-
-
