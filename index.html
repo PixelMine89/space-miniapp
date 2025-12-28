@@ -1,96 +1,51 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Space Fleet</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    body {
-      background:#0b1020;
-      color:white;
-      font-family:Arial;
-      text-align:center;
-      margin:0;
-      padding:20px;
-    }
-    .card {
-      background:#151b35;
-      margin:15px 0;
-      padding:15px;
-      border-radius:12px;
-    }
-    button {
-      padding:12px 20px;
-      margin:6px;
-      font-size:16px;
-      border-radius:8px;
-      border:none;
-      cursor:pointer;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Space Fleet</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+body { background:#0b1020; color:white; font-family:Arial; text-align:center }
+.card { background:#151b35; margin:15px; padding:15px; border-radius:12px }
+button { padding:10px 20px; margin:5px; font-size:16px }
+</style>
 </head>
 <body>
 
 <h2>🚀 Space Fleet</h2>
 
 <div class="card">
-  💰 Credits: <span id="credits">0</span>
-</div>
-
-<div class="card">
-  <b>Купить ракету (Telegram ⭐)</b><br>
-  <button onclick="buyRocket('Scout', 10)">Scout (10⭐)</button>
-  <button onclick="buyRocket('Cargo', 25)">Cargo (25⭐)</button>
+  <b>Ракеты</b><br>
+  <button onclick="selectRocket('Scout', 1)">Scout (1⭐)</button>
+  <button onclick="selectRocket('Cargo', 25)">Cargo (25⭐)</button>
+  <button onclick="selectRocket('Fighter', 50)">Fighter (50⭐)</button>
+  <button onclick="selectRocket('Explorer', 100)">Explorer (100⭐)</button>
 </div>
 
 <script>
 const tg = Telegram.WebApp;
 tg.ready();
 
-let pendingAction = null;
+let selected = null;
 
-// регистрация пользователя (оставляем)
-fetch(API_URL, {
-  method: "POST",
-  body: JSON.stringify({ action: "register", user_id: userId })
-}).then(loadUser);
-
-// ====== ПОКУПКА РАКЕТЫ ======
-function buyRocket(type, price) {
-  pendingAction = {
-    action: "buy_rocket",
-    type: type,
-    price: price
-  };
-
+function selectRocket(type, price) {
+  selected = { action: "buy_rocket", type, price };
   tg.MainButton.setText(Купить ${type} за ${price} ⭐);
   tg.MainButton.show();
 }
 
-// ====== ОБРАБОТКА MAIN BUTTON ======
 tg.MainButton.onClick(() => {
-  if (!pendingAction) return;
-
-  tg.sendData(JSON.stringify(pendingAction));
+  if (!selected) return;
+  tg.sendData(JSON.stringify(selected));
   tg.MainButton.hide();
 });
-
-// ====== ЗАГРУЗКА ПОЛЬЗОВАТЕЛЯ ======
-function loadUser() {
-  fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({ action: "getUser", user_id: userId })
-  })
-  .then(r => r.json())
-  .then(u => {
-    document.getElementById("stars").innerText = u.stars || 0;
-    document.getElementById("credits").innerText = u.credits || 0;
-  });
-}
 </script>
 
 </body>
 </html>
+</body>
+</html>
+
 
 
 
