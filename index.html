@@ -11,15 +11,15 @@ button { padding:10px 20px; margin:5px; font-size:16px }
 </style>
 </head>
 <body>
-  
+
 <h2>🚀 Space Fleet</h2>
 
 <div class="card">
   <b>Ракеты</b><br>
-  <button onclick="selectRocket('Scout', 1)">Scout (1⭐)</button>
-  <button onclick="selectRocket('Cargo', 25)">Cargo (25⭐)</button>
-  <button onclick="selectRocket('Fighter', 50)">Fighter (50⭐)</button>
-  <button onclick="selectRocket('Explorer', 100)">Explorer (100⭐)</button>
+  <button onclick="buyRocket('Scout')">Scout (1⭐)</button>
+  <button onclick="buyRocket('Cargo')">Cargo (25⭐)</button>
+  <button onclick="buyRocket('Fighter')">Fighter (50⭐)</button>
+  <button onclick="buyRocket('Explorer')">Explorer (100⭐)</button>
 </div>
 
 <script>
@@ -34,6 +34,7 @@ function buyRocket(type) {
 
   tg.MainButton.onClick(() => {
     alert("MainButton clicked");
+
     tg.sendData(JSON.stringify({
       action: "buy_rocket",
       type: type
@@ -41,5 +42,6 @@ function buyRocket(type) {
   });
 }
 </script>
+
 </body>
 </html>
