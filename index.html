@@ -26,25 +26,27 @@ button { padding:10px 20px; margin:5px; font-size:16px }
 const tg = Telegram.WebApp;
 tg.ready();
 
-let selected = null;
+function buyRocket(type) {
+  alert("buyRocket clicked: " + type);
 
-function selectRocket(type, price) {
-  selected = { action: "buy_rocket", type, price };
-  tg.MainButton.setText(Купить ${type} за ${price} ⭐);
+  tg.MainButton.setText("Купить " + type);
   tg.MainButton.show();
-}
 
-tg.MainButton.onClick(() => {
-  if (!selected) return;
-  tg.sendData(JSON.stringify(selected));
-  tg.MainButton.hide();
-});
+  tg.MainButton.onClick(() => {
+    alert("MainButton clicked");
+    tg.sendData(JSON.stringify({
+      action: "buy_rocket",
+      type: type
+    }));
+  });
+}
 </script>
 
 </body>
 </html>
 </body>
 </html>
+
 
 
 
