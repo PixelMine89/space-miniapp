@@ -42,33 +42,68 @@ fetch(API, {
 loadRockets();
 
 function buyRocket(type) {
+  alert("buyRocket clicked: " + type);
+
+  tg.MainButton.offClick(); // ❗ ОЧИЩАЕМ СТАРЫЕ ОБРАБОТЧИКИ
+
   tg.MainButton.setText("Купить " + type);
   tg.MainButton.show();
 
   tg.MainButton.onClick(() => {
-    tg.sendData(JSON.stringify({
-      action: "buy_rocket",
-      type: type
-    }));
+    alert("MainButton clicked");
+
+tg.sendData(JSON.stringify({
+  action: "buy_rocket",
+  type: type
+}));
+
+tg.close(); // ⬅ пользователь возвращается в чат
   });
 }
 
 function loadRockets() {
+  console.log("loadRockets() start", userId);
+
   fetch(API, {
     method: "POST",
-    body: JSON.stringify({ action: "getRockets", user_id: userId })
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "getRockets",
+      user_id: userId
+    })
   })
-  .then(r => r.json())
-  .then(list => {
-    if (!list.length) {
+  .then(r => {
+    console.log("API status", r.status);
+    return r.text();
+  })
+  .then(text => {
+    console.log("API raw response:", text);
+
+    let list;
+    try {
+      list = JSON.parse(text);
+    } catch (e) {
+      document.getElementById("myRockets").innerText =
+        "❌ Ошибка JSON (см. консоль)";
+      return;
+    }
+
+    if (!Array.isArray(list) || list.length === 0) {
       document.getElementById("myRockets").innerText = "Нет ракет";
       return;
     }
+
     document.getElementById("myRockets").innerHTML =
       list.map(r => "🚀 " + r.type).join("<br>");
+  })
+  .catch(err => {
+    console.error("loadRockets error", err);
+    document.getElementById("myRockets").innerText =
+      "❌ Ошибка загрузки";
   });
 }
 </script>
 
 </body>
 </html>
+
