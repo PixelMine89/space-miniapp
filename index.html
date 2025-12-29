@@ -3,54 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <title>Space Fleet</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-body {
-  background:#0b0f1a;
-  color:white;
-  font-family:Arial;
-  padding:20px;
-}
-button {
-  padding:10px 16px;
-  margin:5px 0;
-  font-size:16px;
-}
+body { background:#0b1020; color:white; font-family:Arial; text-align:center }
+.card { background:#151b35; margin:15px; padding:15px; border-radius:12px }
+button { padding:10px 20px; margin:5px; font-size:16px }
 </style>
 </head>
 <body>
 
 <h2>🚀 Space Fleet</h2>
 
-<div id="myRockets">Загрузка...</div>
+<div class="card">
+  <b>Мои ракеты</b><br>
+  <div id="myRockets">Загрузка...</div>
+</div>
 
-<hr>
-
-<button onclick="buy('Scout')">Купить Scout (1⭐)</button>
-<button onclick="buy('Cargo')">Купить Cargo (25⭐)</button>
-<button onclick="buy('Fighter')">Купить Fighter (50⭐)</button>
+<div class="card">
+  <b>Купить</b><br>
+  <button onclick="buy('Scout')">Scout (1⭐)</button>
+  <button onclick="buy('Cargo')">Cargo (25⭐)</button>
+  <button onclick="buy('Fighter')">Fighter (50⭐)</button>
+  <button onclick="buy('Explorer')">Explorer (100⭐)</button>
+</div>
 
 <script>
 const tg = Telegram.WebApp;
 tg.ready();
+tg.expand();
 
-// --- ПОЛУЧЕНИЕ USER ID ---
-if (!tg.initDataUnsafe || !tg.initDataUnsafe.user) {
-  alert("❌ Ошибка: открой миниапп через кнопку в чате");
-  throw new Error("No user");
+if (!tg.initDataUnsafe?.user?.id) {
+  document.getElementById("myRockets").innerText = "❌ Нет user_id";
+  throw new Error("NO USER ID");
 }
 
-const USER_ID = String(tg.initDataUnsafe.user.id);
+const USER_ID = tg.initDataUnsafe.user.id;
+const API = "https://script.google.com/macros/s/AKfycbyw_cdlhyJSML0HIPsYOa97Ixy31ABlek99LJK7JAIFWGGkdhAj8I1Z1VrhDMcwg8WhbQ/exec";
 
-// !!! ВСТАВЬ СВОЙ URL !!!
-const API = "https://script.google.com/macros/s/AKfycbxVU91aKF0FEg9aawadhGijLgoExZts52Tj-XlZ3hTT8JyUzp3oxZicGSB6xBrhhDJm6w/exec";
-
-// --- ЗАГРУЗКА РАКЕТ ---
+// ===== загрузка ракет =====
 function loadRockets() {
-  document.getElementById("myRockets").innerText = "Загрузка...";
-
   fetch(API, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       action: "getRockets",
       user_id: USER_ID
@@ -59,20 +52,20 @@ function loadRockets() {
   .then(r => r.json())
   .then(list => {
     if (!Array.isArray(list) || list.length === 0) {
-      document.getElementById("myRockets").innerText = "🚫 У вас нет ракет";
+      document.getElementById("myRockets").innerText = "Нет ракет";
       return;
     }
-
     document.getElementById("myRockets").innerHTML =
-      "<b>Ваши ракеты:</b><br>" +
       list.map(r => "🚀 " + r.type).join("<br>");
   })
   .catch(() => {
-    alert("❌ Ошибка загрузки ракет");
+    document.getElementById("myRockets").innerText = "❌ Ошибка загрузки";
   });
 }
 
-// --- ПОКУПКА ---
+loadRockets();
+
+// ===== покупка =====
 function buy(type) {
   tg.sendData(JSON.stringify({
     action: "buy_rocket",
@@ -80,12 +73,12 @@ function buy(type) {
   }));
 }
 
-// --- ОБНОВЛЕНИЕ ПОСЛЕ ОПЛАТЫ ---
-tg.onEvent("web_app_data", () => {
-  loadRockets();
+// ===== возврат после оплаты =====
+tg.onEvent("visibility_changed", () => {
+  if (tg.isVisible) {
+    loadRockets();
+  }
 });
-
-loadRockets();
 </script>
 
 </body>
