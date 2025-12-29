@@ -31,45 +31,41 @@ button { padding:10px 20px; margin:5px; font-size:16px }
 const tg = Telegram.WebApp;
 tg.ready();
 
-function log(msg) {
-  document.getElementById("myRockets").innerText = msg;
-}
+const API = "https://script.google.com/macros/s/ТВОЙ_ID/exec";
+const userId = tg.initDataUnsafe.user.id;
 
-if (!tg.initDataUnsafe || !tg.initDataUnsafe.user) {
-  log("❌ Нет user_id");
-} else {
-  const userId = tg.initDataUnsafe.user.id;
-  log("Загрузка...");
+console.log("USER ID:", userId);
 
-  const API = "https://script.google.com/macros/s/ТВОЙ_ID/exec";
-
+// ===== загрузка ракет =====
+function loadRockets() {
   fetch(API, {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       action: "getRockets",
       user_id: userId
     })
   })
-  .then(r => r.text())
-  .then(t => {
-    console.log("RAW:", t);
-    const list = JSON.parse(t);
-
+  .then(r => r.json())
+  .then(list => {
     if (!list.length) {
-      log("Нет ракет");
+      document.getElementById("myRockets").innerText = "Нет ракет";
       return;
     }
-
     document.getElementById("myRockets").innerHTML =
       list.map(r => "🚀 " + r.type).join("<br>");
   })
-  .catch(err => {
-    log("❌ Ошибка загрузки");
+  .catch(e => {
+    console.error(e);
+    document.getElementById("myRockets").innerText = "❌ Ошибка загрузки";
   });
 }
 
+loadRockets();
+
 // ===== покупка =====
 function buyRocket(type) {
+  tg.MainButton.offClick();
   tg.MainButton.setText("Купить " + type);
   tg.MainButton.show();
 
@@ -84,5 +80,3 @@ function buyRocket(type) {
 
 </body>
 </html>
-
-
