@@ -20,11 +20,11 @@ button { padding:10px 20px; margin:5px; font-size:16px }
 </div>
 
 <div class="card">
-  <b>Купить ракеты</b><br>
-  <button onclick="buyRocket('Scout')">Scout (10⭐)</button>
-  <button onclick="buyRocket('Cargo')">Cargo (25⭐)</button>
-  <button onclick="buyRocket('Fighter')">Fighter (50⭐)</button>
-  <button onclick="buyRocket('Explorer')">Explorer (100⭐)</button>
+  <b>Купить</b><br>
+  <button onclick="buy('Scout')">Scout (1⭐)</button>
+  <button onclick="buy('Cargo')">Cargo (25⭐)</button>
+  <button onclick="buy('Fighter')">Fighter (50⭐)</button>
+  <button onclick="buy('Explorer')">Explorer (100⭐)</button>
 </div>
 
 <script>
@@ -33,59 +33,52 @@ tg.ready();
 tg.expand();
 
 const API = "https://script.google.com/macros/s/AKfycbw6g9E1qQ69FEWjHjFsPzRhbafMSf57SnoUwBcxPpJccicP9g4TD9N0Q9T7hB2x7GZbkw/exec";
+const INIT_DATA = tg.initData;
 
-// ===== Ждем появления user.id =====
-function waitForUserId(callback) {
-  const interval = setInterval(() => {
-    if (tg.initDataUnsafe?.user?.id) {
-      clearInterval(interval);
-      callback(tg.initDataUnsafe.user.id);
-    }
-  }, 100);
+if (!INIT_DATA) {
+  document.getElementById("myRockets").innerText = "❌ Нет initData";
 }
 
-waitForUserId(userId => {
-  console.log("USER ID:", userId);
-  loadRockets(userId);
-
-  // ===== Покупка ракеты =====
-  window.buyRocket = function(type) {
-    tg.sendData(JSON.stringify({
-      action: "buy_rocket",
-      type: type
-    }));
-  };
-
-  // ===== Обновление после возврата из оплаты =====
-  tg.onEvent("visibility_changed", () => {
-    if (tg.isVisible) loadRockets(userId);
-  });
-});
-
-// ===== Загрузка ракет =====
-function loadRockets(userId) {
-  const el = document.getElementById("myRockets");
+// ===== загрузка ракет =====
+function loadRockets() {
   fetch(API, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       action: "getRockets",
-      user_id: userId
+      initData: INIT_DATA
     })
   })
   .then(r => r.json())
   .then(list => {
     if (!Array.isArray(list) || list.length === 0) {
-      el.innerText = "Нет ракет";
+      document.getElementById("myRockets").innerText = "Нет ракет";
       return;
     }
-    el.innerHTML = list.map(r => "🚀 " + r.type).join("<br>");
+    document.getElementById("myRockets").innerHTML =
+      list.map(r => "🚀 " + r.type).join("<br>");
   })
   .catch(err => {
-    console.error(err);
-    el.innerText = "❌ Ошибка загрузки";
+    document.getElementById("myRockets").innerText = "❌ Ошибка загрузки";
   });
 }
+
+loadRockets();
+
+// ===== покупка (НЕ МЕНЯЕМ) =====
+function buy(type) {
+  tg.sendData(JSON.stringify({
+    action: "buy_rocket",
+    type: type
+  }));
+}
+
+// ===== обновление после оплаты =====
+tg.onEvent("visibility_changed", () => {
+  if (tg.isVisible) {
+    loadRockets();
+  }
+});
 </script>
 
 </body>
