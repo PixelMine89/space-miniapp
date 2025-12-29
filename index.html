@@ -32,18 +32,13 @@ const tg = Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-const API = "https://script.google.com/macros/s/AKfycbyw_cdlhyJSML0HIPsYOa97Ixy31ABlek99LJK7JAIFWGGkdhAj8I1Z1VrhDMcwg8WhbQ/exec";
-
-const userId =
-  tg.initDataUnsafe?.user?.id ||
-  tg.initDataUnsafe?.chat?.id ||
-  null;
-
-if (!userId) {
+if (!tg.initDataUnsafe?.user?.id) {
   document.getElementById("myRockets").innerText = "❌ Нет user_id";
-} else {
-  loadRockets();
+  throw new Error("NO USER ID");
 }
+
+const USER_ID = tg.initDataUnsafe.user.id;
+const API = "https://script.google.com/macros/s/AKfycbyw_cdlhyJSML0HIPsYOa97Ixy31ABlek99LJK7JAIFWGGkdhAj8I1Z1VrhDMcwg8WhbQ/exec";
 
 // ===== загрузка ракет =====
 function loadRockets() {
@@ -51,7 +46,7 @@ function loadRockets() {
     method: "POST",
     body: JSON.stringify({
       action: "getRockets",
-      user_id: userId
+      user_id: USER_ID
     })
   })
   .then(r => r.json())
@@ -60,7 +55,6 @@ function loadRockets() {
       document.getElementById("myRockets").innerText = "Нет ракет";
       return;
     }
-
     document.getElementById("myRockets").innerHTML =
       list.map(r => "🚀 " + r.type).join("<br>");
   })
@@ -69,17 +63,19 @@ function loadRockets() {
   });
 }
 
+loadRockets();
+
 // ===== покупка =====
-function buyRocket(type) {
+function buy(type) {
   tg.sendData(JSON.stringify({
     action: "buy_rocket",
     type: type
   }));
 }
 
-// ===== обновление после оплаты =====
+// ===== возврат после оплаты =====
 tg.onEvent("visibility_changed", () => {
-  if (tg.isVisible && userId) {
+  if (tg.isVisible) {
     loadRockets();
   }
 });
@@ -87,5 +83,3 @@ tg.onEvent("visibility_changed", () => {
 
 </body>
 </html>
-
-
