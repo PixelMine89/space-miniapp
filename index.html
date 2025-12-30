@@ -73,7 +73,23 @@ tg.onEvent("visibility_changed", () => {
     loadRockets();
   }
 });
-</script>
 
+// ===== ЖЁСТКИЙ DEBUG (НИЖЕ НЕ ПИСАТЬ НИЧЕГО) =====
+setTimeout(() => {
+  const debug = {
+    location: window.location.href,
+    initData: tg.initData,
+    initDataUnsafe: tg.initDataUnsafe,
+    user: tg.initDataUnsafe?.user ?? null,
+    hash: tg.initDataUnsafe?.hash ?? null,
+    platform: tg.platform,
+    version: tg.version,
+    isExpanded: tg.isExpanded
+  };
+
+  alert("DEBUG:\n" + JSON.stringify(debug, null, 2));
+}, 1500);
+  
+</script>
 </body>
 </html>
