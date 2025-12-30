@@ -33,8 +33,7 @@ tg.ready();
 tg.expand();
 
 if (!tg.initDataUnsafe?.user?.id) {
-  document.getElementById("myRockets").innerText = "❌ Нет user_id";
-  throw new Error("NO USER ID");
+  document.getElementById("myRockets").innerText = "⏳ Ожидание user_id...";
 }
 
 const USER_ID = tg.initDataUnsafe.user.id;
@@ -93,3 +92,4 @@ setTimeout(() => {
 </script>
 </body>
 </html>
+
