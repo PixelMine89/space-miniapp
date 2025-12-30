@@ -60,7 +60,7 @@ function loadRockets() {
 
 loadRockets();
 
-// ===== Покупка =====
+// ===== покупка (НЕ ТРОГАЕМ) =====
 function buy(type) {
   tg.sendData(JSON.stringify({
     action: "buy_rocket",
@@ -68,7 +68,7 @@ function buy(type) {
   }));
 }
 
-// ===== Обновление после оплаты =====
+// ===== обновление после оплаты =====
 tg.onEvent("visibility_changed", () => {
   if (tg.isVisible) {
     loadRockets();
@@ -78,4 +78,5 @@ tg.onEvent("visibility_changed", () => {
 
 </body>
 </html>
+
 
