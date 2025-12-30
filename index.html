@@ -32,75 +32,34 @@ const tg = Telegram.WebApp;
 tg.ready();
 tg.expand();
 
+if (!tg.initDataUnsafe?.user?.id) {
+  document.getElementById("myRockets").innerText = "❌ Нет user_id";
+  throw new Error("NO USER ID");
+}
+
+const USER_ID = tg.initDataUnsafe.user.id;
 const API = "https://script.google.com/macros/s/AKfycbzy4T5ypktbQpAkzWoNmU_nPmZDsKTgQ6n3C2-d7IgHL0GXHjlaLtBp_2OhD_zE-h68ZA/exec";
-const rocketsDiv = document.getElementById("myRockets");
 
-let USER_ID = null;
-
-// ===== ждём user_id с двух источников =====
-function waitForUserId(tries = 30) {
-    // 1) initDataUnsafe
-    let user = tg.initDataUnsafe?.user;
-    if (!user) {
-        // 2) fallback: tg.user (новое в WebApp API 2025)
-        user = tg.user;
-    }
-
-    if (user?.id) {
-        USER_ID = user.id;
-        startApp();
-        return;
-    }
-
-    if (tries <= 0) {
-        rocketsDiv.innerText = "❌ Не удалось получить user_id";
-        return;
-    }
-
-    setTimeout(() => waitForUserId(tries - 1), 100);
-}
-
-function startApp() {
-    loadRockets();
-
-    window.buy = function(type) {
-        tg.sendData(JSON.stringify({
-            action: "buy_rocket",
-            type
-        }));
-    };
-
-    tg.onEvent("visibility_changed", () => {
-        if (tg.isVisible) {
-            loadRockets();
-        }
-    });
-}
-
-// ===== загрузка ракет =====
+// ===== загрузка ракет (ТОЛЬКО GET) =====
 function loadRockets() {
-  if (!USER_ID) {
-    rocketsDiv.innerText = "❌ Нет user_id";
-    return;
-  }
-
-  rocketsDiv.innerText = "Загрузка...";
-
   fetch(`${API}?action=getRockets&user_id=${USER_ID}`)
     .then(r => r.json())
     .then(list => {
       if (!Array.isArray(list) || list.length === 0) {
-        rocketsDiv.innerText = "Нет ракет";
+        document.getElementById("myRockets").innerText = "Нет ракет";
         return;
       }
-      rocketsDiv.innerHTML = list.map(r => "🚀 " + r.type).join("<br>");
+      document.getElementById("myRockets").innerHTML =
+        list.map(r => "🚀 " + r.type).join("<br>");
     })
     .catch(() => {
-      rocketsDiv.innerText = "❌ Ошибка загрузки";
+      document.getElementById("myRockets").innerText = "❌ Ошибка загрузки";
     });
 }
 
-// ===== покупки и обновление списка после оплаты оставляем без изменений =====
+loadRockets();
+
+// ===== покупка (НЕ ТРОГАЕМ) =====
 function buy(type) {
   tg.sendData(JSON.stringify({
     action: "buy_rocket",
@@ -108,18 +67,13 @@ function buy(type) {
   }));
 }
 
+// ===== обновление после оплаты =====
 tg.onEvent("visibility_changed", () => {
   if (tg.isVisible) {
     loadRockets();
   }
 });
-
-// стартуем ожидание user_id
-waitForUserId();
 </script>
 
 </body>
 </html>
-
-
-
