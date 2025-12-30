@@ -32,64 +32,67 @@ const tg = Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-if (!tg.initDataUnsafe?.user?.id) {
-  document.getElementById("myRockets").innerText = "⏳ Ожидание user_id...";
-}
-
-const USER_ID = tg.initDataUnsafe.user.id;
+const rocketsDiv = document.getElementById("myRockets");
 const API = "https://script.google.com/macros/s/AKfycbzy4T5ypktbQpAkzWoNmU_nPmZDsKTgQ6n3C2-d7IgHL0GXHjlaLtBp_2OhD_zE-h68ZA/exec";
 
-// ===== загрузка ракет (ТОЛЬКО GET) =====
+let USER_ID = null;
+
+// ===== DEBUG (ГАРАНТИРОВАННО ОТРАБОТАЕТ) =====
+setTimeout(() => {
+  alert(
+    "DEBUG\n" +
+    "initData: " + tg.initData + "\n\n" +
+    "initDataUnsafe: " + JSON.stringify(tg.initDataUnsafe)
+  );
+}, 500);
+
+// ===== корректное получение user_id =====
+function initUser() {
+  const user = tg.initDataUnsafe?.user;
+
+  if (!user?.id) {
+    rocketsDiv.innerText = "❌ user_id не передан";
+    return;
+  }
+
+  USER_ID = user.id;
+  loadRockets();
+}
+
 function loadRockets() {
-  fetch(`${API}?action=getRockets&user_id=${USER_ID}`)
+  rocketsDiv.innerText = "Загрузка...";
+
+  fetch(${API}?action=getRockets&user_id=${USER_ID})
     .then(r => r.json())
     .then(list => {
       if (!Array.isArray(list) || list.length === 0) {
-        document.getElementById("myRockets").innerText = "Нет ракет";
+        rocketsDiv.innerText = "Нет ракет";
         return;
       }
-      document.getElementById("myRockets").innerHTML =
-        list.map(r => "🚀 " + r.type).join("<br>");
+      rocketsDiv.innerHTML = list.map(r => "🚀 " + r.type).join("<br>");
     })
-    .catch(() => {
-      document.getElementById("myRockets").innerText = "❌ Ошибка загрузки";
+    .catch(err => {
+      rocketsDiv.innerText = "❌ Ошибка загрузки";
     });
 }
 
-loadRockets();
-
-// ===== покупка (НЕ ТРОГАЕМ) =====
+// ===== покупка НЕ ТРОГАЕМ =====
 function buy(type) {
   tg.sendData(JSON.stringify({
     action: "buy_rocket",
-    type: type
+    type
   }));
 }
 
-// ===== обновление после оплаты =====
 tg.onEvent("visibility_changed", () => {
-  if (tg.isVisible) {
+  if (tg.isVisible && USER_ID) {
     loadRockets();
   }
 });
 
-// ===== ЖЁСТКИЙ DEBUG (НИЖЕ НЕ ПИСАТЬ НИЧЕГО) =====
-setTimeout(() => {
-  const debug = {
-    location: window.location.href,
-    initData: tg.initData,
-    initDataUnsafe: tg.initDataUnsafe,
-    user: tg.initDataUnsafe?.user ?? null,
-    hash: tg.initDataUnsafe?.hash ?? null,
-    platform: tg.platform,
-    version: tg.version,
-    isExpanded: tg.isExpanded
-  };
-
-  alert("DEBUG:\n" + JSON.stringify(debug, null, 2));
-}, 1500);
-  
+initUser();
 </script>
 </body>
 </html>
+
 
