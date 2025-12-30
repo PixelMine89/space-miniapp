@@ -48,28 +48,38 @@ const tg = Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-const API = "https://script.google.com/macros/s/AKfycbwnfINeniSgDDXTMfj9ZGPwaKdFYqat33QV5p6nlinCdIbgIn5xbdXR7l7emIhV3un5jg/exec";
+const API = "https://script.google.com/macros/s/AKfycbzw3UglARKTQA_DW5YNfQvwa05IvDBDx6NR64nRwhXqIPB3yY_thTHS-XAejvxwe9RPzw/exec";
 
 // ===== загрузка ракет =====
 function loadRockets() {
   fetch(API, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify({
       action: "getRockets",
-      initData: tg.initData
+      user_id: USER_ID
     })
   })
   .then(r => r.json())
   .then(list => {
-    if (!Array.isArray(list) || list.length === 0) {
-      rockets.innerText = "Нет ракет";
+    if (list.error) {
+      document.getElementById("myRockets").innerText =
+        "❌ " + list.error;
       return;
     }
-    rockets.innerHTML = list.map(r => "🚀 " + r.type).join("<br>");
+
+    if (!list.length) {
+      document.getElementById("myRockets").innerText = "Нет ракет";
+      return;
+    }
+
+    document.getElementById("myRockets").innerHTML =
+      list.map(r => "🚀 " + r.type).join("<br>");
   })
   .catch(() => {
-    rockets.innerText = "Ошибка загрузки";
+    document.getElementById("myRockets").innerText = "❌ Ошибка загрузки";
   });
 }
 
@@ -91,4 +101,5 @@ loadRockets();
 
 </body>
 </html>
+
 
