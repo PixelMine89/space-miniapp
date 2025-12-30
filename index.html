@@ -32,34 +32,53 @@ const tg = Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-if (!tg.initDataUnsafe?.user?.id) {
-  document.getElementById("myRockets").innerText = "❌ Нет user_id";
-  throw new Error("NO USER ID");
+const API = "https://script.google.com/macros/s/AKfycbzy4T5ypktbQpAkzWoNmU_nPmZDsKTgQ6n3C2-d7IgHL0GXHjlaLtBp_2OhD_zE-h68ZA/exec";
+const rocketsDiv = document.getElementById("myRockets");
+
+let USER_ID = null;
+
+// ===== ждём user_id =====
+function waitForUserId(tries = 20) {
+  const user = tg.initDataUnsafe?.user;
+
+  if (user?.id) {
+    USER_ID = user.id;
+    loadRockets();
+    return;
+  }
+
+  if (tries <= 0) {
+    rocketsDiv.innerText = "❌ Не удалось получить user_id";
+    return;
+  }
+
+  setTimeout(() => waitForUserId(tries - 1), 100);
 }
 
-const USER_ID = tg.initDataUnsafe.user.id;
-const API = "https://script.google.com/macros/s/AKfycbzy4T5ypktbQpAkzWoNmU_nPmZDsKTgQ6n3C2-d7IgHL0GXHjlaLtBp_2OhD_zE-h68ZA/exec";
-
-// ===== загрузка ракет (ТОЛЬКО GET) =====
+// ===== загрузка ракет =====
 function loadRockets() {
+  if (!USER_ID) {
+    rocketsDiv.innerText = "❌ Нет user_id";
+    return;
+  }
+
+  rocketsDiv.innerText = "Загрузка...";
+
   fetch(`${API}?action=getRockets&user_id=${USER_ID}`)
     .then(r => r.json())
     .then(list => {
       if (!Array.isArray(list) || list.length === 0) {
-        document.getElementById("myRockets").innerText = "Нет ракет";
+        rocketsDiv.innerText = "Нет ракет";
         return;
       }
-      document.getElementById("myRockets").innerHTML =
-        list.map(r => "🚀 " + r.type).join("<br>");
+      rocketsDiv.innerHTML = list.map(r => "🚀 " + r.type).join("<br>");
     })
     .catch(() => {
-      document.getElementById("myRockets").innerText = "❌ Ошибка загрузки";
+      rocketsDiv.innerText = "❌ Ошибка загрузки";
     });
 }
 
-loadRockets();
-
-// ===== покупка (НЕ ТРОГАЕМ) =====
+// ===== покупки и обновление списка после оплаты оставляем без изменений =====
 function buy(type) {
   tg.sendData(JSON.stringify({
     action: "buy_rocket",
@@ -67,14 +86,17 @@ function buy(type) {
   }));
 }
 
-// ===== обновление после оплаты =====
 tg.onEvent("visibility_changed", () => {
   if (tg.isVisible) {
     loadRockets();
   }
 });
+
+// стартуем ожидание user_id
+waitForUserId();
 </script>
 
 </body>
 </html>
+
 
