@@ -62,10 +62,11 @@ loadRockets();
 
 // ===== покупка (НЕ ТРОГАЕМ) =====
 function buy(type) {
-  tg.sendData(JSON.stringify({
-    action: "buy_rocket",
-    type: type
-  }));
+    tg.MainButton.setText("Купить " + type);
+    tg.MainButton.show();
+    tg.MainButton.onClick(() => {
+        tg.sendData(JSON.stringify({ action: "buy_rocket", type }));
+    });
 }
 
 // ===== обновление после оплаты =====
@@ -78,6 +79,7 @@ tg.onEvent("visibility_changed", () => {
 
 </body>
 </html>
+
 
 
 
