@@ -48,15 +48,16 @@ setTimeout(() => {
 
 // ===== корректное получение user_id =====
 function initUser() {
-  const user = tg.initDataUnsafe?.user;
+    const user = tg.initDataUnsafe?.user || tg.user;
 
-  if (!user?.id) {
-    rocketsDiv.innerText = "❌ user_id не передан";
-    return;
-  }
+    if (!user?.id) {
+        rocketsDiv.innerText = "❌ Не удалось получить user_id";
+        alert("DEBUG: нет user_id", tg.initDataUnsafe, tg.user);
+        return;
+    }
 
-  USER_ID = user.id;
-  loadRockets();
+    USER_ID = user.id;
+    loadRockets();
 }
 
 function loadRockets() {
@@ -94,6 +95,7 @@ initUser();
 </script>
 </body>
 </html>
+
 
 
 
