@@ -21,7 +21,7 @@ button { padding:10px 20px; margin:5px; font-size:16px; }
 
 <div class="card">
   <b>Купить</b><br>
-  <button onclick="buy('Scout')">Scout (10⭐)</button>
+  <button onclick="buy('Scout')">Scout (1⭐)</button>
   <button onclick="buy('Cargo')">Cargo (25⭐)</button>
   <button onclick="buy('Fighter')">Fighter (50⭐)</button>
   <button onclick="buy('Explorer')">Explorer (100⭐)</button>
@@ -64,7 +64,7 @@ loadRockets();
 function buy(type) {
   tg.sendData(JSON.stringify({
     action: "buy_rocket",
-    type
+    type: type
   }));
 }
 
@@ -78,3 +78,4 @@ tg.onEvent("visibility_changed", () => {
 
 </body>
 </html>
+
