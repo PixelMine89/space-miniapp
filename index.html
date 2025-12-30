@@ -62,7 +62,7 @@ function initUser() {
 function loadRockets() {
   rocketsDiv.innerText = "Загрузка...";
 
-  fetch(${API}?action=getRockets&user_id=${USER_ID})
+  fetch(`${API}?action=getRockets&user_id=${USER_ID}`)
     .then(r => r.json())
     .then(list => {
       if (!Array.isArray(list) || list.length === 0) {
@@ -94,5 +94,6 @@ initUser();
 </script>
 </body>
 </html>
+
 
 
