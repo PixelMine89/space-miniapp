@@ -5,9 +5,9 @@
 <title>Space Fleet</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-body { background:#0b1020; color:white; font-family:Arial; text-align:center }
-.card { background:#151b35; margin:15px; padding:15px; border-radius:12px }
-button { padding:10px 20px; margin:5px; font-size:16px }
+body { background:#0b1020; color:white; font-family:Arial; text-align:center; }
+.card { background:#151b35; margin:15px; padding:15px; border-radius:12px; }
+button { padding:10px 20px; margin:5px; font-size:16px; }
 </style>
 </head>
 <body>
@@ -21,7 +21,7 @@ button { padding:10px 20px; margin:5px; font-size:16px }
 
 <div class="card">
   <b>Купить</b><br>
-  <button onclick="buy('Scout')">Scout (1⭐)</button>
+  <button onclick="buy('Scout')">Scout (10⭐)</button>
   <button onclick="buy('Cargo')">Cargo (25⭐)</button>
   <button onclick="buy('Fighter')">Fighter (50⭐)</button>
   <button onclick="buy('Explorer')">Explorer (100⭐)</button>
@@ -32,37 +32,20 @@ const tg = Telegram.WebApp;
 tg.ready();
 tg.expand();
 
+const API = "https://script.google.com/macros/s/AKfycbw06kzQPsqf38BqmacoTay8SuNvR-zIOymMpfHFPvBZJJuM8T7LtpVzm9X4Mo_W_ZWPqA/exec";
 const rocketsDiv = document.getElementById("myRockets");
-const API = "https://script.google.com/macros/s/AKfycbzy4T5ypktbQpAkzWoNmU_nPmZDsKTgQ6n3C2-d7IgHL0GXHjlaLtBp_2OhD_zE-h68ZA/exec";
 
-let USER_ID = null;
+// ===== Ждём user_id из initDataUnsafe (гарантировано работает через InlineKeyboard) =====
+let USER_ID = tg.initDataUnsafe?.user?.id;
 
-// ===== DEBUG (ГАРАНТИРОВАННО ОТРАБОТАЕТ) =====
-setTimeout(() => {
-  alert(
-    "DEBUG\n" +
-    "initData: " + tg.initData + "\n\n" +
-    "initDataUnsafe: " + JSON.stringify(tg.initDataUnsafe)
-  );
-}, 500);
-
-// ===== корректное получение user_id =====
-function initUser() {
-    const user = tg.initDataUnsafe?.user || tg.user;
-
-    if (!user?.id) {
-        rocketsDiv.innerText = "❌ Не удалось получить user_id";
-        alert("DEBUG: нет user_id", tg.initDataUnsafe, tg.user);
-        return;
-    }
-
-    USER_ID = user.id;
-    loadRockets();
+if (!USER_ID) {
+  rocketsDiv.innerText = "❌ Не удалось получить user_id";
+  throw new Error("NO USER ID");
 }
 
+// ===== Загрузка ракет =====
 function loadRockets() {
   rocketsDiv.innerText = "Загрузка...";
-
   fetch(`${API}?action=getRockets&user_id=${USER_ID}`)
     .then(r => r.json())
     .then(list => {
@@ -72,12 +55,12 @@ function loadRockets() {
       }
       rocketsDiv.innerHTML = list.map(r => "🚀 " + r.type).join("<br>");
     })
-    .catch(err => {
-      rocketsDiv.innerText = "❌ Ошибка загрузки";
-    });
+    .catch(() => { rocketsDiv.innerText = "❌ Ошибка загрузки"; });
 }
 
-// ===== покупка НЕ ТРОГАЕМ =====
+loadRockets();
+
+// ===== Покупка =====
 function buy(type) {
   tg.sendData(JSON.stringify({
     action: "buy_rocket",
@@ -85,17 +68,13 @@ function buy(type) {
   }));
 }
 
+// ===== Обновление после оплаты =====
 tg.onEvent("visibility_changed", () => {
-  if (tg.isVisible && USER_ID) {
+  if (tg.isVisible) {
     loadRockets();
   }
 });
-
-initUser();
 </script>
+
 </body>
 </html>
-
-
-
-
