@@ -42,7 +42,7 @@ const API = "https://script.google.com/macros/s/AKfycbzy4T5ypktbQpAkzWoNmU_nPmZD
 
 // ===== загрузка ракет (ТОЛЬКО GET) =====
 function loadRockets() {
-  fetch(${API}?action=getRockets&user_id=${USER_ID})
+  fetch(`${API}?action=getRockets&user_id=${USER_ID}`)
     .then(r => r.json())
     .then(list => {
       if (!Array.isArray(list) || list.length === 0) {
@@ -77,3 +77,4 @@ tg.onEvent("visibility_changed", () => {
 
 </body>
 </html>
+
