@@ -40,7 +40,7 @@ fetch(API + "/auth", {
 
 // ===== ЗАГРУЗКА РАКЕТ =====
 function loadRockets() {
-  fetch(${API}/rockets?telegram_id=${USER_ID})
+  fetch(`${API}/rockets?telegram_id=${USER_ID}`)
     .then(r => r.json())
     .then(list => {
       if (list.length === 0) {
@@ -64,3 +64,4 @@ function buy(type) {
 
 </body>
 </html>
+
